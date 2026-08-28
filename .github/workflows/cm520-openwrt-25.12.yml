@@ -101,7 +101,7 @@ jobs:
         with:
           name: CM520-79F OpenWrt 25.12
           tag: cm520-79f-openwrt-25.12
-          artifacts: openwrt/bin/targets/ipq40xx/generic/*
+          artifacts: openwrt/bin/targets/ipq40xx/generic/*cm520-79f-squashfs-sysupgrade.bin,openwrt/bin/targets/ipq40xx/generic/sha256sums
           artifactErrorsFailBuild: true
           allowUpdates: true
           removeArtifacts: true
