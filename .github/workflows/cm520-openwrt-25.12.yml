@@ -54,8 +54,7 @@ jobs:
           path = Path('target/linux/ipq40xx/image/generic.mk')
           text = path.read_text()
           marker = 'define Device/mobipromo_cm520-79f\n'
-          override = (
-              marker
+          override = marker + (
               '\t# Older CM520 firmware cannot migrate its swconfig settings.\n'
               '\tDEVICE_COMPAT_VERSION := 1.0\n'
               '\tDEVICE_COMPAT_MESSAGE := Upgrade with Keep settings disabled.\n'
