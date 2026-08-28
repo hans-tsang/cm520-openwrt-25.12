@@ -48,12 +48,16 @@ exact symbols selected by `make defconfig`.
 	PowerShell, compare `Get-FileHash <image> -Algorithm SHA256` with the entry
 	for the image in `sha256sums`.
 3. Back up the existing CM520-79F configuration before upgrading.
-4. Use LuCI's **Flash image** page or run `sysupgrade <image>` over SSH.
-5. Keep configuration only when its packages and settings are compatible with
-	OpenWrt 25.12. A clean configuration is recommended for a major upgrade.
+4. In LuCI's **Flash image** page, select the
+	`*cm520-79f-squashfs-sysupgrade.bin` file and **uncheck Keep settings**.
+	The current 25.12 target uses DSA networking while the older CM520 image
+	uses swconfig, so retaining the old configuration is not supported.
+5. Alternatively, run `sysupgrade -n <image>` over SSH. The `-n` option
+	explicitly starts with a clean configuration.
 
 Never flash an image intended for a different `ipq40xx` device. Interrupting
-power while firmware is being written can make the router unbootable.
+power while firmware is being written can make the router unbootable. After
+the first boot, configure the router again at `172.16.0.1`.
 
 ## Local Build
 

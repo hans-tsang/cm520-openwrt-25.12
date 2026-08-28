@@ -45,6 +45,26 @@ jobs:
           git clone --depth 1 --branch "$OPENWRT_BRANCH" \
             "$OPENWRT_REPOSITORY" openwrt
 
+      - name: Set legacy CM520 upgrade compatibility
+        working-directory: openwrt
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('target/linux/ipq40xx/image/generic.mk')
+          text = path.read_text()
+          marker = 'define Device/mobipromo_cm520-79f\n'
+          override = (
+              marker
+              '\t# Older CM520 firmware cannot migrate its swconfig settings.\n'
+              '\tDEVICE_COMPAT_VERSION := 1.0\n'
+              '\tDEVICE_COMPAT_MESSAGE := Upgrade with Keep settings disabled.\n'
+          )
+          if marker not in text:
+              raise SystemExit('CM520 device definition was not found')
+          path.write_text(text.replace(marker, override, 1))
+          PY
+
       - name: Apply feed customizations
         working-directory: openwrt
         run: bash ../DIY/cm520-openwrt-pre-feeds.sh
@@ -80,8 +100,10 @@ jobs:
         working-directory: openwrt
         run: |
           image_dir=bin/targets/ipq40xx/generic
-          find "$image_dir" -maxdepth 1 -type f -name '*cm520-79f-squashfs-sysupgrade.bin' -size +0c -print
-          test "$(find "$image_dir" -maxdepth 1 -type f -name '*cm520-79f-squashfs-sysupgrade.bin' -size +0c -print -quit)"
+          image=$(find "$image_dir" -maxdepth 1 -type f -name '*cm520-79f-squashfs-sysupgrade.bin' -size +0c -print -quit)
+          test -n "$image"
+          echo "Verified flashable image: $image"
+          tar -xOf "$image" "sysupgrade-mobipromo_cm520-79f/CONTROL" | grep -Fx 'BOARD=mobipromo_cm520-79f'
 
       - name: Upload resolved configuration
         uses: actions/upload-artifact@v4
@@ -110,5 +132,7 @@ jobs:
             Official OpenWrt 25.12 firmware for MobiPromo CM520-79F.
 
             Flash the `*cm520-79f-squashfs-sysupgrade.bin` file only on a
-            CM520-79F device. Verify the included `sha256sums` file before
-            flashing and keep a current configuration backup.
+            CM520-79F device. This image requires **Keep settings** to be
+            disabled when upgrading from the older swconfig-based firmware.
+            Verify the included `sha256sums` file before flashing and keep a
+            current configuration backup.
