@@ -30,18 +30,9 @@
 # sed -i '$a src-git dnsfilter https://github.com/kiddin9/luci-app-dnsfilter' feeds.conf.default
 # sed -i '$a src-git kenzo https://github.com/kenzok8/openwrt-packages' feeds.conf.default
 # sed -i '$a src-git small https://github.com/kenzok8/small' feeds.conf.default
-git clone https://github.com/kenzok8/openwrt-packages.git package/openwrt-packages
-git clone https://github.com/kenzok8/small.git package/small
+# Third-party package trees from the 23.05 build are intentionally not used.
+# They are not versioned for OpenWrt 25.12 and can replace core packages.
 #rm -rf package/openwrt-packages/luci-app-adguardhome
-rm -rf package/openwrt-packages/adguardhome
-rm -rf package/openwrt-packages/luci-app-ddns-go
-rm -rf package/openwrt-packages/ddns-go
-rm -rf package/openwrt-packages/luci-app-aliyundrive-webdav
-rm -rf package/small/xray-core
-rm -rf package/small/sing-box
-rm -rf package/small/mosdns
-rm -rf package/small/naiveproxy
-rm -rf package/small/lua-neturl
 #git clone https://github.com/kenzok8/small-package feeds/small-package
 #git clone https://github.com/kiddin9/openwrt-packages package/kiddin9
 #git clone https://github.com/bootli/luci-app-turboacc.git package/small-package/luci-app-turboacc
@@ -91,10 +82,9 @@ rm -rf package/small/lua-neturl
 # firewall3/4 的luci-app-socat
 ####################################
 #
-rm -rf feeds/luci/luci-app-socat
-svn export --force https://github.com/chenmozhijin/luci-app-socat/trunk/luci-app-socat feeds/luci/applications/luci-app-socat
+# luci-app-socat is not included because its legacy LuCI implementation is
+# not compatible with the current upstream LuCI stack.
 #
 ####################################
 # firewall3/4 的luci-app-socat of End
 ####################################
-rm -rf feeds/packages/net/adguardhome
