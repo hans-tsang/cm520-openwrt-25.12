@@ -18,7 +18,7 @@ address, hostname, DNS cache settings, and connection tracking limit.
 
 ## Continuous Delivery
 
-The [CM520 workflow](.github/workflows/cm520-openwrt-25.12.yml) can be
+The [CM520 workflow](.github/workflows/cm520-dnsfilter.yml) can be
 started from the GitHub Actions page with **Run workflow**. It performs these
 steps:
 

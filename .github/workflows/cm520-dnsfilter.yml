@@ -5,7 +5,7 @@ on:
   push:
     branches: [main]
     paths:
-      - '.github/workflows/cm520-openwrt-25.12.yml'
+      - '.github/workflows/cm520-dnsfilter.yml'
       - 'Config_Files/CanBox.config'
       - 'diy-part1.sh'
       - 'diy-part2.sh'
@@ -18,8 +18,8 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  OPENWRT_REPOSITORY: https://github.com/coolsnowwolf/lede.git
-  OPENWRT_BRANCH: master
+  LEDE_REPOSITORY: https://github.com/coolsnowwolf/lede.git
+  LEDE_BRANCH: master
   CONFIG_FILE: Config_Files/CanBox.config
 
 jobs:
@@ -42,21 +42,21 @@ jobs:
 
       - name: Clone OpenWrt source
         run: |
-          git clone --depth 1 --branch "$OPENWRT_BRANCH" \
-            "$OPENWRT_REPOSITORY" openwrt
+          git clone --depth 1 --branch "$LEDE_BRANCH" \
+            "$LEDE_REPOSITORY" lede
 
       - name: Apply feed customizations
-        working-directory: openwrt
+        working-directory: lede
         run: bash ../diy-part1.sh
 
       - name: Update and install official feeds
-        working-directory: openwrt
+        working-directory: lede
         run: |
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
       - name: Apply target configuration
-        working-directory: openwrt
+        working-directory: lede
         run: |
           cp "../$CONFIG_FILE" .config
           bash ../diy-part2.sh
@@ -91,13 +91,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: CM520-79F_DNSfilter_resolved-config
-          path: openwrt/.config
+          path: lede/.config
 
       - name: Upload ready-to-flash firmware
         uses: actions/upload-artifact@v4
         with:
           name: CM520-79F_DNSfilter_firmware
-          path: openwrt/bin/targets/ipq40xx/generic
+          path: lede/bin/targets/ipq40xx/generic
           if-no-files-found: error
 
       - name: Publish rolling firmware release
@@ -105,7 +105,7 @@ jobs:
         with:
           name: CM520-79F DNSfilter
           tag: cm520-79f-dnsfilter
-          artifacts: openwrt/bin/targets/ipq40xx/generic/*cm520-79f-squashfs-sysupgrade.bin,openwrt/bin/targets/ipq40xx/generic/sha256sums
+          artifacts: lede/bin/targets/ipq40xx/generic/*cm520-79f-squashfs-sysupgrade.bin,lede/bin/targets/ipq40xx/generic/sha256sums
           artifactErrorsFailBuild: true
           allowUpdates: true
           removeArtifacts: true
