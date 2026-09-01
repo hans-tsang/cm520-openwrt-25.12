@@ -52,7 +52,7 @@ exact symbols selected by `make defconfig`.
 
 Never flash an image intended for a different `ipq40xx` device. Interrupting
 power while firmware is being written can make the router unbootable. After
-the first boot, configure the router again at `172.16.0.1`.
+the first boot, configure the router at `172.30.1.1`.
 
 ## Local Build
 
@@ -61,7 +61,7 @@ from a clean clone:
 
 ```bash
 git clone --depth 1 --branch master https://github.com/coolsnowwolf/lede.git
-cd openwrt
+cd lede
 bash ../path-to-this-repository/diy-part1.sh
 ./scripts/feeds update -a
 ./scripts/feeds install -a

@@ -114,7 +114,5 @@ jobs:
             DNSfilter firmware for MobiPromo CM520-79F, based on the Canbox build configuration.
 
             Flash the `*cm520-79f-squashfs-sysupgrade.bin` file only on a
-            CM520-79F device. This image requires **Keep settings** to be
-            disabled when upgrading from the older swconfig-based firmware.
-            Verify the included `sha256sums` file before flashing and keep a
-            current configuration backup.
+            CM520-79F device. Verify the included `sha256sums` file before
+            flashing and keep a current configuration backup.
