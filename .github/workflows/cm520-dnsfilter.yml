@@ -14,7 +14,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: cm520-openwrt-25-12
+  group: cm520-dnsfilter
   cancel-in-progress: false
 
 env:
@@ -65,7 +65,7 @@ jobs:
           grep -Fx 'CONFIG_PACKAGE_dnsmasq-full=y' .config
 
       - name: Download source archives
-        working-directory: openwrt
+        working-directory: lede
         run: |
           make download -j"$(nproc)"
           if find dl -type f -size -1024c | grep -q .; then
@@ -75,11 +75,11 @@ jobs:
           fi
 
       - name: Build firmware
-        working-directory: openwrt
+        working-directory: lede
         run: make -j"$(nproc)"
 
       - name: Verify flashable image
-        working-directory: openwrt
+        working-directory: lede
         run: |
           image_dir=bin/targets/ipq40xx/generic
           image=$(find "$image_dir" -maxdepth 1 -type f -name '*cm520-79f-squashfs-sysupgrade.bin' -size +0c -print -quit)
