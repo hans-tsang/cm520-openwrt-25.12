@@ -50,9 +50,9 @@ jobs:
 
     - name: Trigger build
       if: steps.cacheHash.outputs.cache-hit != 'true'
-      uses: peter-evans/repository-dispatch@v2
+      uses: peter-evans/repository-dispatch@v3
       with:
-        token: ${{ secrets.ACTIONS_TRIGGER_PAT }}
+        token: ${{ secrets.ACTIONS_TRIGGER_PAT || secrets.GITHUB_TOKEN }}
         event-type: Source Code Update
 
 #    - name: Source Code Update notification
