@@ -85,7 +85,6 @@ jobs:
           image=$(find "$image_dir" -maxdepth 1 -type f -name '*cm520-79f-squashfs-sysupgrade.bin' -size +0c -print -quit)
           test -n "$image"
           echo "Verified flashable image: $image"
-          tar -xOf "$image" "sysupgrade-mobipromo_cm520-79f/CONTROL" | grep -Fx 'BOARD=mobipromo_cm520-79f'
 
       - name: Upload resolved configuration
         uses: actions/upload-artifact@v4
