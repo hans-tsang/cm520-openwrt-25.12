@@ -41,7 +41,7 @@ svn export --force https://github.com/kiddin9/openwrt-packages/trunk/luci-app-rc
 git clone https://github.com/bootli/luci-app-ddns-go.git package/ddns-go
 svn export --force https://github.com/kiddin9/openwrt-packages/trunk/ddns-scripts-dnspod package/small-package/luci-app-ddns
 svn export --force https://github.com/kiddin9/openwrt-packages/trunk/luci-app-ddns package/small-package/luci-app-ddns
-##  sed -i '$a src-git dnsfilter https://github.com/kiddin9/luci-app-dnsfilter' feeds.conf.default
+sed -i '$a src-git dnsfilter https://github.com/kiddin9/luci-app-dnsfilter' feeds.conf.default
 #sed -i '$a src-git kenzo https://github.com/kenzok8/openwrt-packages' feeds.conf.default
 #sed -i '$a src-git small https://github.com/kenzok8/small' feeds.conf.default
 ##  git clone https://github.com/kenzok8/small-package package/small-package

@@ -1,0 +1,120 @@
+name: CM520 DNSfilter
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/cm520-dnsfilter.yml'
+      - 'Config_Files/CanBox.config'
+      - 'diy-part1.sh'
+      - 'diy-part2.sh'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cm520-dnsfilter
+  cancel-in-progress: false
+
+env:
+  LEDE_REPOSITORY: https://github.com/coolsnowwolf/lede.git
+  LEDE_BRANCH: master
+  CONFIG_FILE: Config_Files/CanBox.config
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Check out build configuration
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential clang flex bison g++ gawk gcc-multilib gettext git \
+            libncurses-dev libssl-dev python3 python3-setuptools rsync unzip file \
+            wget zlib1g-dev subversion
+
+      - name: Clone LEDE source
+        run: |
+          git clone --depth 1 --branch "$LEDE_BRANCH" \
+            "$LEDE_REPOSITORY" lede
+
+      - name: Apply feed customizations
+        working-directory: lede
+        run: bash ../diy-part1.sh
+
+      - name: Update and install official feeds
+        working-directory: lede
+        run: |
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: Apply target configuration
+        working-directory: lede
+        run: |
+          cp "../$CONFIG_FILE" .config
+          bash ../diy-part2.sh
+          make defconfig
+          grep -Fx 'CONFIG_PACKAGE_luci-app-dnsfilter=y' .config
+          grep -Fx 'CONFIG_PACKAGE_dnsmasq-full=y' .config
+
+      - name: Download source archives
+        working-directory: lede
+        run: |
+          make download -j"$(nproc)"
+          if find dl -type f -size -1024c | grep -q .; then
+            echo 'One or more source archives are incomplete.' >&2
+            find dl -type f -size -1024c -print >&2
+            exit 1
+          fi
+
+      - name: Build firmware
+        working-directory: lede
+        run: make -j"$(nproc)"
+
+      - name: Verify flashable image
+        working-directory: lede
+        run: |
+          image_dir=bin/targets/ipq40xx/generic
+          image=$(find "$image_dir" -maxdepth 1 -type f -name '*cm520-79f-squashfs-sysupgrade.bin' -size +0c -print -quit)
+          test -n "$image"
+          echo "Verified flashable image: $image"
+          control=$(tar -tf "$image" | grep -E '/CONTROL$' | head -n 1)
+          test -n "$control"
+          tar -xOf "$image" "$control" | grep -Fx 'BOARD=mobipromo_cm520-79f'
+
+      - name: Upload resolved configuration
+        uses: actions/upload-artifact@v4
+        with:
+          name: CM520-79F_DNSfilter_resolved-config
+          path: lede/.config
+
+      - name: Upload ready-to-flash firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: CM520-79F_DNSfilter_firmware
+          path: lede/bin/targets/ipq40xx/generic
+          if-no-files-found: error
+
+      - name: Publish rolling firmware release
+        uses: ncipollo/release-action@v1
+        with:
+          name: CM520-79F DNSfilter
+          tag: cm520-79f-dnsfilter
+          artifacts: lede/bin/targets/ipq40xx/generic/*cm520-79f-squashfs-sysupgrade.bin,lede/bin/targets/ipq40xx/generic/sha256sums
+          artifactErrorsFailBuild: true
+          allowUpdates: true
+          removeArtifacts: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          body: |
+            DNSfilter firmware for MobiPromo CM520-79F, based on the Canbox build configuration.
+
+            Flash the `*cm520-79f-squashfs-sysupgrade.bin` file only on a
+            CM520-79F device. Verify the included `sha256sums` file before
+            flashing and keep a current configuration backup.

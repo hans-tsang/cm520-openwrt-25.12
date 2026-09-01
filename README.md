@@ -1,41 +1,38 @@
-# CM520-79F OpenWrt Firmware
+# CM520-79F DNSfilter Firmware
 
-This repository builds a ready-to-flash OpenWrt 25.12 firmware image for the
-MobiPromo CM520-79F (`ipq40xx/generic`). It uses the official
-[OpenWrt 25.12 branch](https://github.com/openwrt/openwrt/tree/openwrt-25.12)
-and official OpenWrt feeds only.
+This repository builds a ready-to-flash DNSfilter firmware image for the
+MobiPromo CM520-79F (`ipq40xx/generic`). Its active build follows the Canbox
+configuration and DIY scripts from
+[OneCloud_Canbox-OpenWrt_DNSfilter](https://github.com/2286927/OneCloud_Canbox-OpenWrt_DNSfilter).
 
 ## Included Configuration
 
 The source configuration is
-[Config_Files/CM520_OpenWrt_25.12.config](Config_Files/CM520_OpenWrt_25.12.config).
-It selects the CM520-79F device and includes LuCI, HTTPS support,
-`dnsmasq-full`, `block-mount`, and USB storage support.
+[Config_Files/CanBox.config](Config_Files/CanBox.config). It selects the
+CM520-79F device, `luci-app-dnsfilter`, and `dnsmasq-full`.
 
-The post-configuration script
-[DIY/cm520-openwrt-post-config.sh](DIY/cm520-openwrt-post-config.sh) changes
-the default router address to `172.16.0.1`, changes the hostname to
-`CM520-79F`, sets DNS cache values, and raises the connection tracking limit.
-The pre-feed script intentionally adds no third-party package source; this
-avoids replacing OpenWrt core packages with unpinned external code.
+The build runs [diy-part1.sh](diy-part1.sh) before updating feeds and
+[diy-part2.sh](diy-part2.sh) after selecting the configuration, matching the
+referenced build. These add its package sources, DNSfilter feed, default
+address, hostname, DNS cache settings, and connection tracking limit.
 
 ## Continuous Delivery
 
-The [CM520 workflow](.github/workflows/cm520-openwrt-25.12.yml) runs when its
-configuration, scripts, or workflow file changes on `main`, and can also be
+The [CM520 workflow](.github/workflows/cm520-dnsfilter.yml) can be
 started from the GitHub Actions page with **Run workflow**. It performs these
 steps:
 
 1. Installs build dependencies on Ubuntu 24.04.
-2. Clones `openwrt/openwrt` at the `openwrt-25.12` branch.
-3. Updates and installs official feeds, applies the configuration, and runs
+2. Clones `coolsnowwolf/lede` at `master`.
+3. Runs the referenced custom feed script, updates and installs feeds, applies
+   the configuration, and runs
 	`make defconfig`.
 4. Downloads sources, builds firmware, and requires a nonempty CM520-79F
 	`sysupgrade.bin` image before publishing anything.
 5. Uploads the complete `ipq40xx/generic` output as an Actions artifact and
-	updates the `cm520-79f-openwrt-25.12` GitHub release.
+	updates the `cm520-79f-dnsfilter` GitHub release.
 
-The Actions artifact named `CM520-79F_OpenWrt-25.12_firmware` contains the
+The Actions artifact named `CM520-79F_DNSfilter_firmware` contains the
 firmware files and checksums. The rolling GitHub release contains the same
 ready-to-flash files. A separate resolved configuration artifact records the
 exact symbols selected by `make defconfig`.
@@ -49,15 +46,13 @@ exact symbols selected by `make defconfig`.
 	for the image in `sha256sums`.
 3. Back up the existing CM520-79F configuration before upgrading.
 4. In LuCI's **Flash image** page, select the
-	`*cm520-79f-squashfs-sysupgrade.bin` file and **uncheck Keep settings**.
-	The current 25.12 target uses DSA networking while the older CM520 image
-	uses swconfig, so retaining the old configuration is not supported.
+	`*cm520-79f-squashfs-sysupgrade.bin` file.
 5. Alternatively, run `sysupgrade -n <image>` over SSH. The `-n` option
 	explicitly starts with a clean configuration.
 
 Never flash an image intended for a different `ipq40xx` device. Interrupting
 power while firmware is being written can make the router unbootable. After
-the first boot, configure the router again at `172.16.0.1`.
+the first boot, configure the router at `172.30.1.1`.
 
 ## Local Build
 
@@ -65,13 +60,13 @@ Use a supported Linux host or WSL distribution with Bash. Run the following
 from a clean clone:
 
 ```bash
-git clone --depth 1 --branch openwrt-25.12 https://github.com/openwrt/openwrt.git
-cd openwrt
-bash ../path-to-this-repository/DIY/cm520-openwrt-pre-feeds.sh
+git clone --depth 1 --branch master https://github.com/coolsnowwolf/lede.git
+cd lede
+bash ../path-to-this-repository/diy-part1.sh
 ./scripts/feeds update -a
 ./scripts/feeds install -a
-cp ../path-to-this-repository/Config_Files/CM520_OpenWrt_25.12.config .config
-bash ../path-to-this-repository/DIY/cm520-openwrt-post-config.sh
+cp ../path-to-this-repository/Config_Files/CanBox.config .config
+bash ../path-to-this-repository/diy-part2.sh
 make defconfig
 make download -j"$(nproc)"
 make -j"$(nproc)"
