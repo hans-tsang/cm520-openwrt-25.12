@@ -40,7 +40,7 @@ jobs:
             libncurses-dev libssl-dev python3 python3-setuptools rsync unzip file \
             wget zlib1g-dev subversion
 
-      - name: Clone OpenWrt source
+      - name: Clone LEDE source
         run: |
           git clone --depth 1 --branch "$LEDE_BRANCH" \
             "$LEDE_REPOSITORY" lede
