@@ -80,6 +80,8 @@ jobs:
           cp "../$CONFIG_FILE" .config
           bash ../DIY/cm520-openwrt-post-config.sh
           make defconfig
+          grep -Fx 'CONFIG_PACKAGE_luci-app-dnsfilter=y' .config
+          grep -Fx 'CONFIG_PACKAGE_dnsmasq-full=y' .config
 
       - name: Download source archives
         working-directory: openwrt
